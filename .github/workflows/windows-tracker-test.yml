@@ -1,0 +1,45 @@
+name: Windows tracker warning test build
+on:
+  push:
+    branches: [test/windows-tracker-login-warnings]
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
+        with:
+          channel: stable
+          flutter-version: "3.47.1"
+      - name: Install locked dependencies
+        run: flutter pub get --enforce-lockfile --no-example
+      - name: Install project Windows engine
+        shell: pwsh
+        run: |
+          flutter precache --windows
+          .\windows\tool\install-patched-engine.ps1
+      - name: Build Windows x64 test bundle
+        # Keep automatic updates disabled so this test stays on the PR code.
+        run: flutter build windows --release --dart-define=ENABLE_UPDATE_CHECK=false --dart-define=ENABLE_SENTRY=false --dart-define=GIT_COMMIT=${{ github.sha }}
+      - name: Verify portable bundle
+        shell: pwsh
+        run: |
+          $bundle = "build/windows/x64/runner/Release"
+          $required = @("plezy.exe", "flutter_windows.dll", "sqlite3.dll", "libmpv-2.dll", "data/app.so", "data/icudtl.dat", "data/flutter_assets/NativeAssetsManifest.json", "msvcp140.dll", "vcruntime140.dll")
+          foreach ($file in $required) {
+            if (-not (Test-Path -LiteralPath "$bundle/$file" -PathType Leaf)) {
+              throw "Required bundle file missing: $file"
+            }
+          }
+      - name: Upload portable test app
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: Plezy-PR-2677-Windows-x64
+          path: build/windows/x64/runner/Release/
+          if-no-files-found: error
+          retention-days: 14
