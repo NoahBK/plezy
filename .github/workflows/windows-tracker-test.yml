@@ -19,9 +19,9 @@ jobs:
       - name: Install locked dependencies
         run: flutter pub get --enforce-lockfile --no-example
       - name: Analyze changed code
-        run: dart analyze --fatal-infos lib/widgets/tracker_session_monitor.dart lib/widgets/tracker_playback_notice.dart lib/screens/main_screen.dart lib/screens/video_player_screen.dart lib/screens/video_player/parts/build.dart test/widgets/tracker_monitor_test.dart
+        run: dart analyze --fatal-infos lib/widgets/tracker_session_monitor.dart lib/widgets/tracker_playback_notice.dart lib/screens/main_screen.dart lib/screens/video_player_screen.dart lib/screens/video_player/parts/build.dart test/widgets/tracker_monitor_test.dart lib/services/settings_service.dart lib/screens/settings/services_settings_screen.dart test/services/tracker_check_settings_test.dart test/widgets/auth_error_banner_test.dart
       - name: Run tracker and playback notice regressions
-        run: flutter test --no-pub test/widgets/tracker_monitor_test.dart test/providers/trackers_provider_test.dart test/providers/trackers_provider_trakt_test.dart test/services/trackers/tracker_account_store_scope_test.dart test/services/trackers/tracker_status_ladder_test.dart test/widgets/auth_error_banner_test.dart test/widgets/rating_bottom_sheet_test.dart test/utils/serial_future_queue_test.dart test/screens/main_screen_layout_test.dart test/navigation/main_screen_scope_test.dart
+        run: flutter test --no-pub test/widgets/tracker_monitor_test.dart test/providers/trackers_provider_test.dart test/providers/trackers_provider_trakt_test.dart test/services/trackers/tracker_account_store_scope_test.dart test/services/trackers/tracker_status_ladder_test.dart test/widgets/auth_error_banner_test.dart test/widgets/rating_bottom_sheet_test.dart test/utils/serial_future_queue_test.dart test/screens/main_screen_layout_test.dart test/navigation/main_screen_scope_test.dart test/services/tracker_check_settings_test.dart test/services/settings_service_test.dart
       - name: Install project Windows engine
         shell: pwsh
         run: |
