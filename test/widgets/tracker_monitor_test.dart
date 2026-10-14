@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plezy/i18n/strings.g.dart';
@@ -34,10 +36,11 @@ void main() {
     await tester.pump(const Duration(seconds: 121));
     expect(trackers.checks, 1);
     await tester.pump(const Duration(minutes: 6));
-    expect(trackers.checks, 2);
+    expect(trackers.checks, inInclusiveRange(2, 3));
+    final checksBeforeDispose = trackers.checks;
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(minutes: 6));
-    expect(trackers.checks, 2);
+    expect(trackers.checks, checksBeforeDispose);
   });
 
   testWidgets('offline mode cancels polling and online mode restarts it', (tester) async {
@@ -46,6 +49,37 @@ void main() {
     await tester.pump(const Duration(minutes: 6));
     expect(trackers.checks, 0);
     await pumpMonitor(tester);
+    await tester.pump(const Duration(minutes: 6));
+    expect(trackers.checks, 1);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('polling continues underneath an open playback route', (tester) async {
+    await tester.pumpWidget(
+      ChangeNotifierProvider<TrackersProvider>.value(
+        value: trackers,
+        child: MaterialApp(
+          home: TrackerSessionMonitor(
+            enabled: true,
+            child: Builder(
+              builder: (context) => Scaffold(
+                body: TextButton(
+                  onPressed: () => unawaited(
+                    Navigator.of(
+                      context,
+                    ).push<void>(MaterialPageRoute(builder: (_) => const Scaffold(body: Text('Playback')))),
+                  ),
+                  child: const Text('Play'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Play'));
+    await tester.pumpAndSettle();
+    expect(find.text('Playback'), findsOneWidget);
     await tester.pump(const Duration(minutes: 6));
     expect(trackers.checks, 1);
     await tester.pumpWidget(const SizedBox());

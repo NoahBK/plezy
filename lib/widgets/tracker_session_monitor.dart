@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/trackers_provider.dart';
+import '../utils/app_logger.dart';
 
 /// Mounted with the main screen, which stays alive underneath playback routes.
 /// Only foreground, online sessions poll. Jitter spreads account requests from
@@ -54,6 +55,7 @@ class _TrackerSessionMonitorState extends State<TrackerSessionMonitor> with Widg
     _timer = Timer(Duration(seconds: 240 + _random.nextInt(121)), () {
       _timer = null;
       if (!mounted || !widget.enabled || !_foreground) return;
+      appLogger.d('Checking tracker sessions (periodic)');
       unawaited(context.read<TrackersProvider>().validateSessions());
       _schedule();
     });
